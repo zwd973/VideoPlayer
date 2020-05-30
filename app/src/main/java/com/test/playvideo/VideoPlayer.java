@@ -47,7 +47,7 @@ public class VideoPlayer {
         mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                Log.e("mediaplayer错误", "what:" + what + "  extra:" + extra);
+                Log.e("Player error", "what:" + what + "  extra:" + extra);
                 return true;
             }
         });
@@ -137,7 +137,7 @@ public class VideoPlayer {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (mediaPlayer == null) {
+                if (mediaPlayer == null||state!=State.PLAYING) {
                     return;
                 }
                 if (onStateChangeListener != null) {
