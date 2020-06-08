@@ -1,12 +1,16 @@
 package com.test.playvideo;
 
 import android.content.Context;
+import android.os.Handler;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,6 +24,7 @@ import com.test.playvideo.view.VideoLoadingProgressbar;
 
 import java.util.ArrayList;
 
+
 public class ScrollVideoAdapter extends VideoPlayAdapter<ScrollVideoAdapter.ViewHolder> {
     private Context mContext;
 
@@ -31,12 +36,24 @@ public class ScrollVideoAdapter extends VideoPlayAdapter<ScrollVideoAdapter.View
 
     private ArrayList<Message> videoList;
 
-    public ScrollVideoAdapter(Context mContext,ArrayList<Message> videoList) {
+    private Handler handler;
+    public ScrollVideoAdapter(Context mContext, final ArrayList<Message> videoList) {
         this.mContext = mContext;
         videoPlayer = new VideoPlayer();
         textureView = new TextureView(mContext);
+        textureView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if(videoPlayer.getState()== VideoPlayer.State.PLAYING)
+                    videoPlayer.pause();
+                else
+                    videoPlayer.start();
+                return false;
+            }
+        });
         videoPlayer.setTextureView(textureView);
         this.videoList = videoList;
+        handler = new Handler();
     }
 
     @NonNull
@@ -79,15 +96,23 @@ public class ScrollVideoAdapter extends VideoPlayAdapter<ScrollVideoAdapter.View
             public void onRenderingStart() {
                 mCurrentHolder.ivCover.setVisibility(View.GONE);
                 mCurrentHolder.pbLoading.setVisibility(View.INVISIBLE);
+//                handler.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mCurrentHolder.pg_bar.setVisibility(View.INVISIBLE);
+//                    }
+//                }, 1000);
             }
 
             @Override
             public void onProgressUpdate(float per) {
+                mCurrentHolder.pg_bar.setProgress((int)(per * 100));
             }
 
             @Override
             public void onPause() {
                 mCurrentHolder.pbLoading.setVisibility(View.INVISIBLE);
+                mCurrentHolder.pg_bar.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -125,6 +150,8 @@ public class ScrollVideoAdapter extends VideoPlayAdapter<ScrollVideoAdapter.View
         private TextView tv_like;
         private TextView tv_favor;
         private TextView tv_star;
+
+        private SeekBar pg_bar;
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             flVideo = itemView.findViewById(R.id.flVideo);
@@ -142,6 +169,25 @@ public class ScrollVideoAdapter extends VideoPlayAdapter<ScrollVideoAdapter.View
             im_star = itemView.findViewById(R.id.im_star);
             im_star.setImageResource(R.drawable.star_off);
             im_star.setOnClickListener(this);
+
+            pg_bar = itemView.findViewById(R.id.seekBar);
+            pg_bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if(fromUser)
+                        videoPlayer.seekTo(progress);
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                }
+            });
         }
         @Override
         public void onClick(View v) {

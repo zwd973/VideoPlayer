@@ -130,6 +130,10 @@ public class VideoPlayer {
         }
     }
 
+    public void seekTo(int progress){
+        mediaPlayer.seekTo((int)(progress  * getDuration() / 100));
+    }
+
     private void refreshProgress() {
         if (state != State.PLAYING) {
             return;
